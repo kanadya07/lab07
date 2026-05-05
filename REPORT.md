@@ -1,90 +1,98 @@
-# Отчет по лабораторной работе №6
+# Отчет по лабораторной работе №7
 
 ## Тема работы
 
-Изучение средств пакетирования с помощью CPack.
+Изучение систем управления пакетами на примере Hunter.
 
 ## Цель работы
 
-Познакомиться с настройкой пакетирования проекта и оформить необходимые файлы
-для создания пакета.
+Познакомиться с Hunter и заменить ручное подключение зависимости GoogleTest на
+подключение через пакетный менеджер.
 
 ## Ход работы
 
 ### 1. Подготовка проекта
 
-Сначала я использовала проект из лабораторной работы №5 и на его основе
-создала репозиторий `lab06`.
+Сначала я использовала проект из лабораторной работы №6 и на его основе
+создала отдельный репозиторий `lab07`.
 
 Команды:
 
 ```bash
-git clone https://github.com/kanadya07/lab05.git lab06
-cd lab06
+git clone https://github.com/kanadya07/lab06.git lab07
+cd lab07
 git remote remove origin
-git remote add origin https://github.com/kanadya07/lab06.git
+git remote add origin https://github.com/kanadya07/lab07.git
 ```
 
-### 2. Добавление версии проекта
+### 2. Подключение Hunter
 
-Потом в основной файл `CMakeLists.txt` я добавила информацию о версии проекта.
+Дальше была создана папка `cmake`, в которую был добавлен файл
+`HunterGate.cmake`. После этого в основной `CMakeLists.txt` было добавлено
+подключение Hunter.
 
-### 3. Создание файлов для CPack
-
-Дальше были созданы файлы, которые нужны для пакетирования:
-
-1. `CPackConfig.cmake`
-2. `DESCRIPTION`
-3. `ChangeLog.md`
-
-Пример команд:
-
-```bash
-touch CPackConfig.cmake
-touch DESCRIPTION
-touch ChangeLog.md
+```cmake
+include("cmake/HunterGate.cmake")
+HunterGate(
+  URL "https://github.com/cpp-pm/hunter/archive/v0.23.251.tar.gz"
+  SHA1 "5659b15dc0884d4b03dbd95710e6a1fa0fc3258d"
+  LOCAL
+)
 ```
 
-### 4. Подключение пакетирования
+### 3. Подключение GoogleTest через Hunter
 
-После этого я добавила подключение `CPack` в проект и настроила установку
-приложения `solver`.
+В проекте было изменено подключение тестов. Вместо `FetchContent` теперь
+используется Hunter.
 
-### 5. Проверка сборки и пакетирования
-
-Для проверки можно использовать такие команды:
-
-```bash
-cmake -S . -B _build
-cmake --build _build
-ctest --test-dir _build --output-on-failure
-cmake --build _build --target package
+```cmake
+hunter_add_package(GTest)
+find_package(GTest CONFIG REQUIRED)
 ```
 
-### 6. Добавление отчета и задания
+После этого тестовое приложение `check` было связано с целями `GTest::main` и
+`GTest::gmock`.
 
-В конце я добавила в репозиторий задание и отчет.
+### 4. Выполнение домашнего задания
+
+Для домашнего задания была добавлена локальная настройка Hunter-пакета:
+
+```text
+cmake/Hunter/config.cmake
+```
+
+В этом файле указана версия пакета `GTest`, которую должен использовать Hunter.
+
+### 5. Добавление демонстрационного приложения
+
+Также была добавлена папка `demo` с приложением `demo`. Программа читает текст
+из стандартного ввода и записывает форматированный результат в файл, путь к
+которому берется из переменной окружения `LOG_PATH`.
+
+### 6. Проверка сборки
+
+Для проверки проекта можно использовать команды:
 
 ```bash
-git add TASK.md REPORT.md
-git commit -m "Добавила задание и отчет"
-git push origin master
+cmake -S . -B _builds -DBUILD_TESTS=ON
+cmake --build _builds
+cmake --build _builds --target test
 ```
 
 ## Что находится в репозитории
 
 1. `TASK.md`
 2. `REPORT.md`
-3. `CPackConfig.cmake`
-4. `DESCRIPTION`
-5. `ChangeLog.md`
+3. `cmake/HunterGate.cmake`
+4. `cmake/Hunter/config.cmake`
+5. `demo/main.cpp`
 6. проект из предыдущих лабораторных работ
 
 ## Вывод
 
-Во время выполнения этой лабораторной работы я познакомилась с тем, как можно
-подготавливать проект не только к сборке, но и к пакетированию.
+Во время выполнения этой лабораторной работы я познакомилась с Hunter и
+увидела, как можно подключать внешние зависимости через пакетный менеджер.
 
 ## Ссылка на репозиторий
 
-https://github.com/kanadya07/lab06
+https://github.com/kanadya07/lab07
